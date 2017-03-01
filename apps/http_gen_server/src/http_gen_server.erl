@@ -6,7 +6,7 @@
 %%% Created :  1 Mar 2017 by Moymer 
 
 -module(http_gen_server).
--export([init/0,add_gen_server/3,call/2]).
+-export([init/0,add_gen_server/3,call/2, cast/2]).
 
 
 
@@ -18,7 +18,8 @@
 %%--------------------------------------------------------------------
 
 init() ->
-    ets:new(?MODULE, [set, named_table, protected]).
+    ets:new(?MODULE, [set, named_table, protected]),
+    add_gen_server(local, <<"127.0.0.1">>, <<"8080">>).
 
 
 add_gen_server(Alias, Url, Port) ->
@@ -35,7 +36,7 @@ cast({global, ServerAlias},{Path, ArgList}) ->
 
 cast({local, ServerAlias},{Path, ArgList}) ->
     URL = iolist_to_binary([ <<"127.0.0.1:8080">>, <<"/">>,Path]),
-    make_call(ServerAlias, URL, ArgList).
+    make_cast(ServerAlias, URL, ArgList).
 
 make_cast(ServerAlias, URL, ArgList) ->
     Headers = [{<<"Content-Type">>, <<"application/json">>}],
