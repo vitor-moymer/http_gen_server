@@ -1,6 +1,0 @@
--sname http_gen_server
-
--setcookie http_gen_server_cookie
-
-+K true
-+A30
