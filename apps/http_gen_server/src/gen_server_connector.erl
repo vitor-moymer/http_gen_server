@@ -1,15 +1,15 @@
 -module(gen_server_connector).
 
--export([start_connector/0, init/2, allowed_methods/2]).
+-export([start_connector/1, init/2, allowed_methods/2]).
 
-start_connector() ->
+start_connector(Port) ->
     Dispatch = cowboy_router:compile([
 				      {'_', [
 					     {"/", gen_server_connector, []}, 
                          {"/[...]", gen_server_connector, []}
 					    ]}
 				     ]),
-    {ok, _} = cowboy:start_clear(http, 100, [{port, 8080}], #{
+    {ok, _} = cowboy:start_clear(http, 100, [{port, Port}], #{
 					      env => #{dispatch => Dispatch}
 					     }).
 
@@ -17,7 +17,7 @@ allowed_methods(Req, State) ->
 	{[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"POST">>], Req, State}.
 
 init(Req, Opts) ->
-	Request = handle_request(Req),
+    Request = handle_request(Req),
     {ok, Request, Opts}.
 
 handle_request(Req) ->
@@ -29,10 +29,10 @@ handle_request(Req) ->
     ArgList = [ModuleFunc | decode_arglist(Body, [])],
     Args = list_to_tuple(ArgList),
     case GenFunc of 
-        "call" ->
+        <<"call">> ->
             Response = gen_server:call(Module, Args ),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
-        "cast" -> 
+        <<"cast">> -> 
             Response = gen_server:call(Module, Args),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         _ -> 
