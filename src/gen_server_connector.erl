@@ -23,7 +23,7 @@ handle_request(Req) ->
     Module = binary_to_atom(ModToken,utf8),
     ModuleFunc = binary_to_atom(ModFuncToken,utf8),
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
-    ArgList = [ModuleFunc | decode_arglist(Body, [])],
+    ArgList = [ModuleFunc | decode_arglist(binary_to_term(Body), [])],
     Args = list_to_tuple(ArgList),
     case GenFunc of 
         <<"call">> ->
@@ -38,8 +38,6 @@ handle_request(Req) ->
             cowboy_req:reply(200, #{}, "No method found", Request)
     end.
 
-decode_arglist(B, []) ->
-    decode_arglist( binary_to_term(B),[]);
 decode_arglist([], R) ->
     lists:reverse(R);
 decode_arglist([H|T], R) ->
