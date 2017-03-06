@@ -16,7 +16,6 @@
 -export([add_gen_server/3, call/2, cast/2]).
 
 -define(SERVER, ?MODULE).
--include_lib("awesome.hrl").
 -record(state, {}).
 
 start_link() ->
