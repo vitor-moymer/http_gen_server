@@ -28,8 +28,7 @@ start_link() ->
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    Child = {http_gen_server, {http_gen_server, start_link, []}, permanent, brutal_kill, worker, [http_gen_server]},
-    {ok, { {one_for_all, 0, 1}, [Child]}}.
+    {ok, { {one_for_all, 0, 1}, []}}.
 
 %%====================================================================
 %% Internal functions
