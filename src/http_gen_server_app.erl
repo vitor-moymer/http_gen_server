@@ -18,6 +18,7 @@ start(_StartType, _StartArgs) ->
     io:format("Http gen server started!"),
     application:ensure_all_started(cowboy),
     application:ensure_all_started(hackney),
+    application:ensure_all_started(ranch),
     http_gen_server_sup:start_link().
 
 
