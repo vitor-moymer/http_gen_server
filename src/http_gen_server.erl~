@@ -112,6 +112,6 @@ get_address(ServerAlias) ->
 
 %% AUX
 encode_arglist([], R) ->
-    term_to_binary(lists:reverse(R)).
+    term_to_binary(lists:reverse(R));
 encode_arglist([H|T], R) ->
     encode_arglist( T, [term_to_binary(H)|R]).

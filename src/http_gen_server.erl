@@ -23,7 +23,6 @@ start_link() ->
 
 init([]) ->
   ets:new(?MODULE, [set, named_table, protected]),  
-  add_gen_server(local, <<"127.0.0.1">>, <<"8080">>),
   {ok, #state{}}.
 
 handle_call({call, local, ServerAlias, Path, ArgList}, _From, State) ->
