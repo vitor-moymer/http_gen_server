@@ -2,7 +2,6 @@
 
 -export([start_connector/0, init/2]).
 -export([allowed_methods/2]).
--include_lib("awesome.hrl").
 
 start_connector() ->
     Dispatch = cowboy_router:compile([
