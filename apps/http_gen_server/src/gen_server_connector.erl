@@ -1,7 +1,6 @@
 -module(gen_server_connector).
 
--export([start_connector/0, init/2]).
--export([allowed_methods/2]).
+-export([start_connector/0, init/2, allowed_methods/2]).
 
 start_connector() ->
     Dispatch = cowboy_router:compile([
@@ -18,30 +17,23 @@ allowed_methods(Req, State) ->
 	{[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"POST">>], Req, State}.
 
 init(Req, Opts) ->
+	Request = handle_request(Req),
+    {ok, Request, Opts}.
+
+handle_request(Req) ->
     Path = cowboy_req:path(Req),
-	Request = handle_request(Path, Req),
-	{ok, Request, Opts}.
-	
-
-handle_request(<<"/Record">>, Req) ->
-    {ok, Value, Req0} = cowboy_req:read_body(Req, #{}),
-    %%C = binary_to_term(Value),
-    [A, Record, B | T] = binary_to_term(Value),
-    %%io:format("Dec ~p~n", [C]),
-    io:format("Int ~p~n", [binary_to_term(A)]),
-    io:format("Bin ~p~n", [binary_to_term(B)]),
-    Record2 = binary_to_term(Record),
-    io:format("Record ~p~n", [Record2#user.signupDate]);
-
-handle_request(<<"/Binary">>, Req) ->
-    {ok, Value, Req0} = cowboy_req:read_body(Req, #{}),
-    io:format("Bin ~p~n", [Value]);
-
-handle_request(<<"/Integer">>, Req) ->
-    {ok, [{Value, _}], Req0} = cowboy_req:read_body(Req),
-io:format("Integer ~p~n", [binary_to_integer(Value)]).
-%%list_to_integer(binary_to_list(Value))
-
-hello_to_json(<<"POST">>, Path, Req) ->
-    Body = <<"{\"rest\": \"Hello World!\"}">>,
-    cowboy_req:reply(200, #{ <<"content-type">> => <<"text/plain">> }, Path, Req).
+    [GenFunc, ModToken, ModFuncToken] = string:tokens(binary_to_list(Path), "/"),
+    Module = list_to_atom(ModToken),
+    ModuleFunc = list_to_atom(ModFuncToken),
+    {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
+    [Args | _] = binary_to_term(Body),
+    case GenFunc of 
+        "call" ->
+            Response = gen_server:call(Module, {ModuleFunc, Args}),
+            cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
+        "cast" -> 
+            Response = gen_server:call(Module, {ModuleFunc, Args}),
+            cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
+        _ -> 
+            cowboy_req:reply(200, #{}, "No method found", Request)
+    end.
