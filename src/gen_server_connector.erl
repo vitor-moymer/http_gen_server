@@ -1,6 +1,6 @@
 -module(gen_server_connector).
 
--export([start_connector/1, init/2, allowed_methods/2]).
+-export([start_connector/1, init/2]).
 
 start_connector(Port) ->
     Dispatch = cowboy_router:compile([
@@ -12,9 +12,6 @@ start_connector(Port) ->
     {ok, _} = cowboy:start_clear(http, 100, [{port, Port}], #{
 					      env => #{dispatch => Dispatch}
 					     }).
-
-allowed_methods(Req, State) ->
-	{[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"POST">>], Req, State}.
 
 init(Req, Opts) ->
     Request = handle_request(Req),
