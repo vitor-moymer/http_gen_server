@@ -27,10 +27,10 @@ handle_request(Req) ->
     Args = list_to_tuple(ArgList),
     case GenFunc of 
         <<"call">> ->
-            Response = gen_server:call(Module, Args ),
+            Response = gen_server:call({global,Module}, Args ),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         <<"cast">> -> 
-            Response = gen_server:call(Module, Args),
+            Response = gen_server:call({global,Module}, Args),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         _ -> 
             cowboy_req:reply(200, #{}, "No method found", Request)
