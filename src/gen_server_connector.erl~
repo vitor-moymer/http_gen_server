@@ -28,9 +28,11 @@ handle_request(Req) ->
     case GenFunc of 
         <<"call">> ->
             Response = gen_server:call({global,Module}, Args ),
-            cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
+	    io:format("Call response ~p~n",[Response]),
+	    cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         <<"cast">> -> 
             Response = gen_server:call({global,Module}, Args),
+	    io:format("Cast response ~p~n",[Response]),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         _ -> 
             cowboy_req:reply(200, #{}, "No method found", Request)

@@ -19,7 +19,7 @@ init(Req, Opts) ->
 
 handle_request(Req) ->
     Path = cowboy_req:path(Req),
-    [GenFunc, ModToken, ModFuncToken] = binary:split(Path,<<"/">>,[global]),  
+    [_,GenFunc, ModToken, ModFuncToken] = binary:split(Path,<<"/">>,[global]),  
     Module = binary_to_atom(ModToken,utf8),
     ModuleFunc = binary_to_atom(ModFuncToken,utf8),
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
