@@ -17,7 +17,6 @@
 start(_StartType, _StartArgs) ->
     application:ensure_all_started(cowboy),
     application:ensure_all_started(hackney),
-    gen_server_connector:start_connector(),
     http_gen_server_sup:start_link().
 
 
