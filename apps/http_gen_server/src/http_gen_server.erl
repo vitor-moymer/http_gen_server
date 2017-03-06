@@ -80,7 +80,7 @@ cast({Register, ServerAlias},{Path, ArgList}) ->
 
 make_cast(ServerAlias, URL, ArgList) ->
     Headers = [],
-    Payload = ArgList,
+    Payload = encode_arglist(ArgList, []),
     Options = [{pool, ServerAlias}],
     {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:post(URL, Headers,
 								Payload, Options),
@@ -92,12 +92,12 @@ call({Register, ServerAlias},{Path, ArgList}) ->
 
 make_call(ServerAlias, URL, ArgList) ->
     Headers = [],
-    Payload =  ArgList,
+    Payload = encode_arglist(ArgList, []),
     Options = [{pool, ServerAlias}],
     {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:post(URL, Headers,
 							       Payload, Options),
     {ok, Body} = hackney:body(ClientRef),
-    Body.
+    binary_to_term(Body).
 
 get_address(ServerAlias) ->
     Default = <<"127.0.0.1:8080">>, 
@@ -109,3 +109,9 @@ get_address(ServerAlias) ->
         [{_, V}] ->
             V
     end.
+
+%% AUX
+encode_arglist([], R) ->
+    term_to_binary(lists:reverse(R));
+encode_arglist([H|T], R) ->
+    encode_arglist( T, [term_to_binary(H)|R]).

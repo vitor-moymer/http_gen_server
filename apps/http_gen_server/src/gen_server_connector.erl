@@ -22,18 +22,26 @@ init(Req, Opts) ->
 
 handle_request(Req) ->
     Path = cowboy_req:path(Req),
-    [GenFunc, ModToken, ModFuncToken] = string:tokens(binary_to_list(Path), "/"),
-    Module = list_to_atom(ModToken),
-    ModuleFunc = list_to_atom(ModFuncToken),
+    [GenFunc, ModToken, ModFuncToken] = binary:split(Path,<<"/">>,[global]),  
+    Module = binary_to_atom(ModToken,utf8),
+    ModuleFunc = binary_to_atom(ModFuncToken,utf8),
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
-    [Args | _] = binary_to_term(Body),
+    ArgList = [ModuleFunc | decode_arglist(Body, [])],
+    Args = list_to_tuple(ArgList),
     case GenFunc of 
         "call" ->
-            Response = gen_server:call(Module, {ModuleFunc, Args}),
+            Response = gen_server:call(Module, Args ),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         "cast" -> 
-            Response = gen_server:call(Module, {ModuleFunc, Args}),
+            Response = gen_server:call(Module, Args),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         _ -> 
             cowboy_req:reply(200, #{}, "No method found", Request)
     end.
+
+decode_arglist(B, []) ->
+    decode_arglist( binary_to_term(B),[]);
+decode_arglist([], R) ->
+    lists:reverse(R);
+decode_arglist([H|T], R) ->
+    decode_arglist( T, [binary_to_term(H)|R]).
