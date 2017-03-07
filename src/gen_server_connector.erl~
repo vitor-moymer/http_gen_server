@@ -35,7 +35,7 @@ handle_request(Req) ->
 	    io:format("Cast response ~p~n",[Response]),
             cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
         _ -> 
-            cowboy_req:reply(200, #{}, "No method found", Request)
+            cowboy_req:reply(404, #{}, "No method found", Request)
     end.
 
 decode_arglist([], R) ->
