@@ -8,7 +8,7 @@
 -module(http_gen_server).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/1]).
 -export([init/1]).
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
@@ -18,12 +18,22 @@
 -define(SERVER, ?MODULE).
 -record(state, {}).
 
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(Services) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [Services], []).
 
-init([]) ->
-  ets:new(?MODULE, [set, named_table, protected]),  
-  {ok, #state{}}.
+init([Services]) ->
+    ets:new(?MODULE, [set, named_table, protected]),  
+    start_services(Services), 
+    {ok, #state{}}.
+
+start_services(Services) ->
+    InitFun =  fun({Alias, Url, Port, PoolTimeout, PoolConnections}) ->
+		       ets:insert(?MODULE,{Alias, iolist_to_binary([Url, <<":">>, Port])} ),
+		       PoolName = Alias,
+		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
+		       hackney_pool:start_pool(PoolName, Options)
+	       end,
+    lists:foreach(InitFun, Services).
 
 handle_call({call, local, ServerAlias, Path, ArgList}, _From, State) ->
     URL = iolist_to_binary([ <<"127.0.0.1:8080">>, <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
