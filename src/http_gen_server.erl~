@@ -8,7 +8,7 @@
 -module(http_gen_server).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/1]).
 -export([init/1]).
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
@@ -27,10 +27,10 @@ init([Services]) ->
     {ok, #state{}}.
 
 start_services(Services) ->
-    InitFun =  fun({Alias, Url, Port}) ->
+    InitFun =  fun({Alias, Url, Port, PoolTimeout, PoolConnections}) ->
 		       ets:insert(?MODULE,{Alias, iolist_to_binary([Url, <<":">>, Port])} ),
 		       PoolName = Alias,
-		       Options = [{timeout,  300000}, {max_connections, 1000}],
+		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
 		       hackney_pool:start_pool(PoolName, Options)
 	       end,
     lists:foreach(InitFun, Services).

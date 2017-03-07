@@ -83,6 +83,8 @@ code_change(_OldVsn, State, _Extra) ->
 add_gen_server(Alias, Url, Port) ->
    gen_server:cast(?MODULE,{add_gen_server,Alias, Url, Port}).
     
+cast({Register, ServerAlias},{Path}) ->
+    gen_server:cast(?MODULE,{cast, Register, ServerAlias, Path, []});
 
 cast({Register, ServerAlias},{Path, ArgList}) ->
     gen_server:cast(?MODULE,{cast, Register, ServerAlias, Path, ArgList}).
@@ -95,6 +97,10 @@ make_cast(ServerAlias, URL, ArgList) ->
 								Payload, Options),
     {ok, Body} = hackney:body(ClientRef),
     Body.
+
+
+call({Register, ServerAlias},{Path}) ->
+    gen_server:call(?MODULE,{call, Register, ServerAlias, Path, []});
 
 call({Register, ServerAlias},{Path, ArgList}) ->
     gen_server:call(?MODULE,{call, Register, ServerAlias, Path, ArgList}).
