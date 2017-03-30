@@ -93,10 +93,7 @@ make_cast(ServerAlias, URL, ArgList) ->
     Headers = [],
     Payload = encode_arglist(ArgList, []),
     Options = [{pool, ServerAlias}],
-    {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:post(URL, Headers,
-								Payload, Options),
-    {ok, Body} = hackney:body(ClientRef),
-    Body.
+    post(cast,URL, Headers,Payload, Options).
 
 
 call({Register, ServerAlias},{Path}) ->
@@ -109,10 +106,8 @@ make_call(ServerAlias, URL, ArgList) ->
     Headers = [],
     Payload = encode_arglist(ArgList, []),
     Options = [{pool, ServerAlias}],
-    {ok, _StatusCode, _RespHeaders, ClientRef} = hackney:post(URL, Headers,
-							       Payload, Options),
-    {ok, Body} = hackney:body(ClientRef),
-    binary_to_term(Body).
+    post(call,URL, Headers,Payload, Options).
+    
 
 get_address(ServerAlias) ->
     Default = <<"127.0.0.1:8080">>, 
@@ -124,6 +119,32 @@ get_address(ServerAlias) ->
         [{_, V}] ->
             V
     end.
+
+post(call, URL, Headers,Payload, Options) ->
+    case hackney:post(URL, Headers, Payload, Options) of
+	{ok, _StatusCode, _RespHeaders, ClientRef} ->
+	    case hackney:body(ClientRef) of
+		{ok, Body} ->
+		    binary_to_term(Body);
+		ErrorBody ->
+		    io:format("~p~n",[ErrorBody]),
+		    <<>>
+	    end;
+	ErrorPost ->
+	    io:format("~p~n",[ErrorPost]),
+	    <<>>
+    end;
+
+post(cast,URL, Headers,Payload, Options) ->	
+    case hackney:post(URL, Headers, Payload, Options) of
+        {ok, _StatusCode, _RespHeaders, _ClientRef} ->
+	    <<>>;
+	ErrorPost ->
+            io:format("~p~n",[ErrorPost]),
+            <<>>
+    end.
+
+
 
 %% AUX
 encode_arglist([], R) ->
