@@ -27,11 +27,20 @@ handle_request(Req) ->
     Args = list_to_tuple(ArgList),
     case GenFunc of 
         <<"call">> ->
-            Response = gen_server:call({global,Module}, Args ),
+	    try
+		R = gen_server:call({global,Module}, Args ),
+		{ok, R}    
+	    of
+		{ok, Response} -> cowboy_req:reply(200, #{}, term_to_binary(Response), Request)
+	    catch
+		_ -> cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request)
+	    end;
 	    %%io:format("Call response ~p~n",[Response]),
-	    cowboy_req:reply(200, #{}, term_to_binary(Response), Request);
+	   
         <<"cast">> -> 
             gen_server:cast({global,Module}, Args),
+
+cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request),		
 	    %%io:format("Cast done~n",[]),
             Request;
         _ -> 
