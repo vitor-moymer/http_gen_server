@@ -31,7 +31,10 @@ handle_request(Req) ->
 		R = gen_server:call({global,Module}, Args ),
 		{ok, R}    
 	    of
-		{ok, Response} -> cowboy_req:reply(200, #{}, term_to_binary(Response), Request)
+		{ok, Response} -> 
+		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
+		    Request
+				      
 	    catch
 		_ -> cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request)
 	    end;
@@ -40,7 +43,7 @@ handle_request(Req) ->
         <<"cast">> -> 
             gen_server:cast({global,Module}, Args),
 
-cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request),		
+	    cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request),		
 	    %%io:format("Cast done~n",[]),
             Request;
         _ -> 

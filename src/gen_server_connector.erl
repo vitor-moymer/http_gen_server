@@ -1,17 +1,22 @@
 -module(gen_server_connector).
 
--export([start_connector/1, init/2]).
+-export([start_connector/1, start_connector/2, init/2]).
+
+
+start_connector(Port, Connections) -> 
+    Dispatch = cowboy_router:compile([
+                                      {'_', [
+                                             {"/", gen_server_connector, []},
+					     {"/[...]", gen_server_connector, []}
+                                            ]}
+				     ]),
+    {ok, _} = cowboy:start_clear(http, Connections, [{port, Port}], #{
+						      env => #{dispatch => Dispatch}
+						     }).
 
 start_connector(Port) ->
-    Dispatch = cowboy_router:compile([
-				      {'_', [
-					     {"/", gen_server_connector, []}, 
-                         {"/[...]", gen_server_connector, []}
-					    ]}
-				     ]),
-    {ok, _} = cowboy:start_clear(http, 100, [{port, Port}], #{
-					      env => #{dispatch => Dispatch}
-					     }).
+    start_connector(Port, 10000).
+
 
 init(Req, Opts) ->
     Request = handle_request(Req),
