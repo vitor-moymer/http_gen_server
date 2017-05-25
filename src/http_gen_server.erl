@@ -13,7 +13,7 @@
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([add_gen_server/3, call/2, cast/2]).
+-export([add_gen_server/3, call/2, cast/2, make_call/3, make_cast/3, parallel_r/4,parallel_nr/3]).
 
 -define(SERVER, ?MODULE).
 -define(CONNECTION_TIMEOUT, 1000).
@@ -33,19 +33,22 @@ start_services(Services) ->
 		       ets:insert(?MODULE,{Alias, iolist_to_binary([Url, <<":">>, Port])} ),
 		       PoolName = Alias,
 		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
-		       hackney_pool:start_pool(PoolName, Options)
+		       R = hackney_pool:start_pool(PoolName, Options),
+		       io:format("~p Started pool ~p: ~p~n",[R,PoolName,Options])
 	       end,
     lists:foreach(InitFun, Services).
 
-handle_call({call, local, ServerAlias, Path, ArgList}, _From, State) ->
+handle_call({call, local, ServerAlias, Path, ArgList}, From, State) ->
     URL = iolist_to_binary([ <<"127.0.0.1:8080">>, <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
-    Reply = make_call(ServerAlias, URL, ArgList),
-    {reply, Reply, State};
+    %%Reply = make_call(ServerAlias, URL, ArgList),
+    p_call(node(),From,?MODULE,make_call,[ServerAlias, URL, ArgList]),
+    {noreply, State};
 
-handle_call({call, global, ServerAlias, Path, ArgList}, _From, State) ->
+handle_call({call, global, ServerAlias, Path, ArgList}, From, State) ->
     URL = iolist_to_binary([get_address(ServerAlias), <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
-    Reply = make_call(ServerAlias, URL, ArgList),
-    {reply, Reply, State};
+    p_call(node(),From,?MODULE,make_call,[ServerAlias, URL, ArgList]),
+    %%Reply = make_call(ServerAlias, URL, ArgList),
+    {noreply, State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -53,12 +56,14 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({cast, global, ServerAlias, Path, ArgList}, State) ->
     URL = iolist_to_binary([get_address(ServerAlias), <<"/cast/">>, atom_to_binary(ServerAlias,utf8), <<"/">>, Path]),
-    make_cast(ServerAlias, URL, ArgList),
+    p_cast(node(),?MODULE,make_cast,[ServerAlias, URL, ArgList]),
+    %%make_cast(ServerAlias, URL, ArgList),
     {noreply,State};
 
 handle_cast({cast, local, ServerAlias, Path, ArgList}, State) ->
     URL = iolist_to_binary([ <<"127.0.0.1:8080">>, <<"/cast/">>, atom_to_binary(ServerAlias,utf8), <<"/">>, Path]),
-    make_cast(ServerAlias, URL, ArgList),
+    p_cast(node(),?MODULE,make_cast,[ServerAlias, URL, ArgList]),
+    %%make_cast(ServerAlias, URL, ArgList),
     {noreply,State};
 
 handle_cast({add_gen_server, Alias, Url, Port},  State) ->
@@ -80,6 +85,7 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
 
 
 add_gen_server(Alias, Url, Port) ->
@@ -159,3 +165,21 @@ encode_arglist([], R) ->
     term_to_binary(lists:reverse(R));
 encode_arglist([H|T], R) ->
     encode_arglist( T, [term_to_binary(H)|R]).
+
+
+
+
+%%PARALLEL CALL
+p_call(Node, From, M, F, A) ->
+    spawn(Node,?MODULE, parallel_r,[From, M,F,A]).
+
+p_cast(Node, M, F, A) ->
+    spawn(Node,?MODULE, parallel_nr,[ M,F,A]).
+
+parallel_r(From, M, F, A) ->
+    Reply = erlang:apply(M,F,A),
+    gen_server:reply(From, Reply).
+
+parallel_nr( M, F, A) ->
+    erlang:apply(M,F,A).
+
