@@ -13,7 +13,7 @@
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([add_gen_server/3, call/2, cast/2, make_call/3, make_cast/3]).
+-export([add_gen_server/3, call/2, cast/2, make_call/3, make_cast/3, parallel_r/4,parallel_nr/3]).
 
 -define(SERVER, ?MODULE).
 -define(CONNECTION_TIMEOUT, 1000).
@@ -33,8 +33,8 @@ start_services(Services) ->
 		       ets:insert(?MODULE,{Alias, iolist_to_binary([Url, <<":">>, Port])} ),
 		       PoolName = Alias,
 		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
-		       R = hackney_pool:start_pool(PoolName, Options),
-		       io:format("~p Started pool ~p: ~p~n",[R,PoolName,Options])
+		       R = hackney_pool:start_pool(PoolName, Options)
+		       %io:format("~p Started pool ~p: ~p~n",[R,PoolName,Options])
 	       end,
     lists:foreach(InitFun, Services).
 
@@ -135,11 +135,11 @@ post(call, URL, Headers,Payload, Options) ->
 		{ok, Body} ->
 		    binary_to_term(Body);
 		ErrorBody ->
-		    io:format("~p~n",[ErrorBody]),
+		    io:format("~p ~p~n",[URL,ErrorBody]),
 		    <<>>
 	    end;
 	ErrorPost ->
-	    io:format("~p~n",[ErrorPost]),
+	    io:format("~p ~p~n",[URL,ErrorPost]),
 	    <<>>
     end;
 
@@ -150,11 +150,11 @@ post(cast,URL, Headers,Payload, Options) ->
                 {ok, _} ->
                     <<>>;
                 ErrorBody ->
-                    io:format("~p~n",[ErrorBody]),
+                    io:format("~p ~p~n",[URL,ErrorBody]),
                     <<>>
 	     end;
 	ErrorPost ->
-            io:format("~p~n",[ErrorPost]),
+	    io:format("~p ~p~n",[URL,ErrorPost]),
             <<>>
     end.
 

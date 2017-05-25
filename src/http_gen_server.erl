@@ -135,11 +135,11 @@ post(call, URL, Headers,Payload, Options) ->
 		{ok, Body} ->
 		    binary_to_term(Body);
 		ErrorBody ->
-		    io:format("~p~n",[ErrorBody]),
+		    io:format("~p ~p~n",[URL,ErrorBody]),
 		    <<>>
 	    end;
 	ErrorPost ->
-	    io:format("~p~n",[ErrorPost]),
+	    io:format("~p ~p~n",[URL,ErrorPost]),
 	    <<>>
     end;
 
@@ -150,11 +150,11 @@ post(cast,URL, Headers,Payload, Options) ->
                 {ok, _} ->
                     <<>>;
                 ErrorBody ->
-                    io:format("~p~n",[ErrorBody]),
+                    io:format("~p ~p~n",[URL,ErrorBody]),
                     <<>>
 	     end;
 	ErrorPost ->
-            io:format("~p~n",[ErrorPost]),
+	    io:format("~p ~p~n",[URL,ErrorPost]),
             <<>>
     end.
 

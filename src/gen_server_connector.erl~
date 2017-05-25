@@ -44,7 +44,7 @@ handle_request(Req) ->
 			
 	    catch
 		Error -> 
-		    io:format("Error: ",[Error]),
+		    io:format("Error: ~p~n",[Error]),
 		    empty_answer(Request)
 			
 	    end;
@@ -59,7 +59,7 @@ handle_request(Req) ->
 		    empty_answer(Request)
 	    catch
                 Error -> 
-                    io:format("Error: ",[Error]),
+                    io:format("Error: ~p~n",[Error]),
                     empty_answer(Request)
 	    end;
 	_ -> 
