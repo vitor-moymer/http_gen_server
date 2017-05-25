@@ -16,6 +16,8 @@
 -export([add_gen_server/3, call/2, cast/2]).
 
 -define(SERVER, ?MODULE).
+-define(CONNECTION_TIMEOUT, 1000).
+-define(RECEIVE_TIMEOUT,4000).
 -record(state, {}).
 
 start_link(Services) ->
@@ -92,7 +94,7 @@ cast({Register, ServerAlias},{Path, ArgList}) ->
 make_cast(ServerAlias, URL, ArgList) ->
     Headers = [],
     Payload = encode_arglist(ArgList, []),
-    Options = [{pool, ServerAlias}],
+    Options = [{pool, ServerAlias},{connect_timeout, ?CONNECTION_TIMEOUT}, {recv_timeout, ?RECEIVE_TIMEOUT}],
     post(cast,URL, Headers,Payload, Options).
 
 
@@ -105,7 +107,7 @@ call({Register, ServerAlias},{Path, ArgList}) ->
 make_call(ServerAlias, URL, ArgList) ->
     Headers = [],
     Payload = encode_arglist(ArgList, []),
-    Options = [{pool, ServerAlias}],
+    Options = [{pool, ServerAlias},{connect_timeout, ?CONNECTION_TIMEOUT}, {recv_timeout, ?RECEIVE_TIMEOUT}], 
     post(call,URL, Headers,Payload, Options).
     
 
@@ -121,7 +123,7 @@ get_address(ServerAlias) ->
     end.
 
 post(call, URL, Headers,Payload, Options) ->
-    case hackney:post(URL, Headers, Payload, Options) of
+    case hackney:request(post,URL, Headers, Payload, Options) of
 	{ok, _StatusCode, _RespHeaders, ClientRef} ->
 	    case hackney:body(ClientRef) of
 		{ok, Body} ->
@@ -136,7 +138,7 @@ post(call, URL, Headers,Payload, Options) ->
     end;
 
 post(cast,URL, Headers,Payload, Options) ->	
-    case hackney:post(URL, Headers, Payload, Options) of
+    case hackney:request(post,URL, Headers, Payload, Options) of
         {ok, _StatusCode, _RespHeaders, ClientRef} ->
 	    case hackney:body(ClientRef) of
                 {ok, _} ->

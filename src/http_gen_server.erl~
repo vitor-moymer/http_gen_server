@@ -137,8 +137,14 @@ post(call, URL, Headers,Payload, Options) ->
 
 post(cast,URL, Headers,Payload, Options) ->	
     case hackney:post(URL, Headers, Payload, Options) of
-        {ok, _StatusCode, _RespHeaders, _ClientRef} ->
-	    <<>>;
+        {ok, _StatusCode, _RespHeaders, ClientRef} ->
+	    case hackney:body(ClientRef) of
+                {ok, _} ->
+                    <<>>;
+                ErrorBody ->
+                    io:format("~p~n",[ErrorBody]),
+                    <<>>
+	     end;
 	ErrorPost ->
             io:format("~p~n",[ErrorPost]),
             <<>>
