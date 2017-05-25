@@ -2,6 +2,7 @@
 
 -export([start_connector/1, start_connector/2, init/2]).
 
+-define(TIMEOUT,5000).
 
 start_connector(Port, Connections) -> 
     Dispatch = cowboy_router:compile([
@@ -30,30 +31,44 @@ handle_request(Req) ->
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
     ArgList = [ModuleFunc | decode_arglist(binary_to_term(Body), [])],
     Args = list_to_tuple(ArgList),
+    io:format("PID ~p, ~p ~p for ~p ~n",[self(),GenFunc,Module, Args ]),
     case GenFunc of 
         <<"call">> ->
 	    try
-		R = gen_server:call({global,Module}, Args ),
+		R = gen_server:call({global,Module}, Args, ?TIMEOUT ),
 		{ok, R}    
 	    of
 		{ok, Response} -> 
 		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
 		    Request
-				      
+			
 	    catch
-		_ -> cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request)
+		Error -> 
+		    io:format("Error: ~p~n",[Error]),
+		    empty_answer(Request)
+			
 	    end;
 	    %%io:format("Call response ~p~n",[Response]),
 	   
         <<"cast">> -> 
-            gen_server:cast({global,Module}, Args),
-
-	    cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request),		
-	    %%io:format("Cast done~n",[]),
-            Request;
-        _ -> 
+	    try
+		gen_server:cast({global,Module}, Args),
+                {ok, done}
+            of
+                {ok, done} -> 
+		    empty_answer(Request)
+	    catch
+                Error -> 
+                    io:format("Error: ~p~n",[Error]),
+                    empty_answer(Request)
+	    end;
+	_ -> 
             cowboy_req:reply(404, #{}, "No method found", Request)
     end.
+
+empty_answer(Request) ->
+    cowboy_req:reply(200, #{}, term_to_binary(<<>>), Request),
+    Request.
 
 decode_arglist([], R) ->
     lists:reverse(R);
