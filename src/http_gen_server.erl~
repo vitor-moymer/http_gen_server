@@ -13,18 +13,18 @@
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([call/2, cast/2, make_call/3, make_cast/3, parallel_r/4,parallel_nr/3]).
-
+-export([call/2, cast/2, make_call/3, make_cast/3]).
+%-export([ parallel_r/4,parallel_nr/3]).
 -define(SERVER, ?MODULE).
 -define(CONNECTION_TIMEOUT, 1000).
--define(RECEIVE_TIMEOUT,4000).
+-define(RECEIVE_TIMEOUT,5000).
 -record(state, {}).
 
 start_link(Services) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [Services], []).
 
 init([Services]) ->
-    ets:new(?MODULE, [set, named_table, protected]),  
+    ets:new(?MODULE, [set, named_table, public]),  
     start_services(Services), 
     {ok, #state{}}.
 
@@ -34,6 +34,7 @@ start_services(Services) ->
 		       PoolName = Alias,
 		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
 		       R = hackney_pool:start_pool(PoolName, Options),
+
 		       io:format("~p Started pool ~p: ~p~n",[R,PoolName,Options])
 	       end,
     lists:foreach(InitFun, Services).
@@ -141,16 +142,16 @@ encode_arglist([H|T], R) ->
 
 
 %%PARALLEL CALL
-p_call(Node, From, M, F, A) ->
-    spawn(Node,?MODULE, parallel_r,[From, M,F,A]).
+%%p_call(Node, From, M, F, A) ->
+  %% spawn(Node,?MODULE, parallel_r,[From, M,F,A]).
 
-p_cast(Node, M, F, A) ->
-    spawn(Node,?MODULE, parallel_nr,[ M,F,A]).
+%%p_cast(Node, M, F, A) ->
+  %%  spawn(Node,?MODULE, parallel_nr,[ M,F,A]).
 
-parallel_r(From, M, F, A) ->
-    Reply = erlang:apply(M,F,A),
-    gen_server:reply(From, Reply).
+%%parallel_r(From, M, F, A) ->
+  %%  Reply = erlang:apply(M,F,A),
+  %%  gen_server:reply(From, Reply).
 
-parallel_nr( M, F, A) ->
-    erlang:apply(M,F,A).
+%%parallel_nr( M, F, A) ->
+    %%erlang:apply(M,F,A).
 

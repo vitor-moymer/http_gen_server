@@ -17,7 +17,7 @@
 %-export([ parallel_r/4,parallel_nr/3]).
 -define(SERVER, ?MODULE).
 -define(CONNECTION_TIMEOUT, 1000).
--define(RECEIVE_TIMEOUT,4000).
+-define(RECEIVE_TIMEOUT,5000).
 -record(state, {}).
 
 start_link(Services) ->
@@ -34,6 +34,7 @@ start_services(Services) ->
 		       PoolName = Alias,
 		       Options = [{timeout,  PoolTimeout}, {max_connections, PoolConnections}],
 		       R = hackney_pool:start_pool(PoolName, Options),
+
 		       io:format("~p Started pool ~p: ~p~n",[R,PoolName,Options])
 	       end,
     lists:foreach(InitFun, Services).
