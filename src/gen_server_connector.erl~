@@ -16,7 +16,7 @@ start_connector(Port, Connections) ->
 						     }).
 
 start_connector(Port) ->
-    start_connector(Port, 10000).
+    start_connector(Port, 1000).
 
 
 init(Req, Opts) ->
