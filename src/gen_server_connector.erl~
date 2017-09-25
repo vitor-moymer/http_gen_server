@@ -31,7 +31,7 @@ handle_request(Req) ->
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
     ArgList = [ModuleFunc | decode_arglist(binary_to_term(Body), [])],
     Args = list_to_tuple(ArgList),
-    io:format("PID ~p, ~p ~p for ~p ~n",[self(),GenFunc,Module, Args ]),
+    %%io:format("PID ~p, ~p ~p for ~p ~n",[self(),GenFunc,Module, Args ]),
     case GenFunc of 
         <<"call">> ->
 	    try
@@ -44,7 +44,7 @@ handle_request(Req) ->
 			
 	    catch
 		Error -> 
-		    io:format("Error: ~p~n",[Error]),
+		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
 		    empty_answer(Request)
 			
 	    end;
@@ -59,7 +59,7 @@ handle_request(Req) ->
 		    empty_answer(Request)
 	    catch
                 Error -> 
-                    io:format("Error: ~p~n",[Error]),
+		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
                     empty_answer(Request)
 	    end;
 	_ -> 

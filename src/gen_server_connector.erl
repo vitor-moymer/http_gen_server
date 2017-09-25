@@ -11,7 +11,7 @@ start_connector(Port, Connections) ->
 					     {"/[...]", gen_server_connector, []}
                                             ]}
 				     ]),
-    {ok, _} = cowboy:start_clear(http, Connections, [{port, Port}], #{
+    {ok, _} = cowboy:start_clear(http, [{port, Port}, {num_acceptor,Connections}], #{
 						      env => #{dispatch => Dispatch}
 						     }).
 
