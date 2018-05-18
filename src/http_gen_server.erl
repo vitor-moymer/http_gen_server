@@ -16,8 +16,8 @@
 -export([call/2, cast/2, make_call/3, make_cast/3]).
 %-export([ parallel_r/4,parallel_nr/3]).
 -define(SERVER, ?MODULE).
--define(CONNECTION_TIMEOUT, 1000).
--define(RECEIVE_TIMEOUT,5000).
+-define(CONNECTION_TIMEOUT, 5000).
+-define(RECEIVE_TIMEOUT,20000).
 -record(state, {}).
 
 start_link(Services) ->
