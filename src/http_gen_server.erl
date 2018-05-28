@@ -13,10 +13,10 @@
 -export([handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([call/2, cast/2, make_call/3, make_cast/3]).
+-export([call/2, call/3, make_call/3, make_call/4, cast/2, make_cast/3]).
 %-export([ parallel_r/4,parallel_nr/3]).
 -define(SERVER, ?MODULE).
--define(CONNECTION_TIMEOUT, 2000).
+-define(CONNECTION_TIMEOUT, 3000).
 -define(RECEIVE_TIMEOUT,12000).
 -record(state, {}).
 
@@ -74,20 +74,25 @@ make_cast(ServerAlias, URL, ArgList) ->
     post(cast,URL, Headers,Payload, Options).
 
 %% CALL
+call(Where, Args, Timeout) ->
+    URL = iolist_to_binary([get_address(ServerAlias), <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
+    %%p_call(node(),From,?MODULE,make_call,[ServerAlias, URL, ArgList]),
+    make_call(ServerAlias, URL, ArgList, Timeout).
+				   
 call({Register, ServerAlias},{Path}) ->
     call({Register, ServerAlias},{Path, []});
 
 call({_Register, ServerAlias},{Path, ArgList}) ->
-    URL = iolist_to_binary([get_address(ServerAlias), <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
-    %%p_call(node(),From,?MODULE,make_call,[ServerAlias, URL, ArgList]),
-    make_call(ServerAlias, URL, ArgList).
+   call(Where, Args,?RECEIVE_TIMEOUT).
 
 make_call(ServerAlias, URL, ArgList) ->
+	make_call(ServerAlias, URL, ArgList, ?RECEIVE_TIMEOUT).
+    
+make_call(ServerAlias, URL, ArgList, TimeOut) ->
     Headers = [],
     Payload = encode_arglist(ArgList, []),
-    Options = [{pool, ServerAlias},{connect_timeout, ?CONNECTION_TIMEOUT}, {recv_timeout, ?RECEIVE_TIMEOUT}], 
+    Options = [{pool, ServerAlias},{connect_timeout, ?CONNECTION_TIMEOUT}, {recv_timeout, TimeOut}], 
     post(call,URL, Headers,Payload, Options).
-    
 
 get_address(ServerAlias) ->
     Default = <<"127.0.0.1:8080">>, 
