@@ -74,16 +74,16 @@ make_cast(ServerAlias, URL, ArgList) ->
     post(cast,URL, Headers,Payload, Options).
 
 %% CALL
-call(Where, Args, Timeout) ->
+call({_Register, ServerAlias},{Path, ArgList},Timeout) ->
     URL = iolist_to_binary([get_address(ServerAlias), <<"/call/">>, atom_to_binary(ServerAlias, utf8), <<"/">>, Path]),
     %%p_call(node(),From,?MODULE,make_call,[ServerAlias, URL, ArgList]),
     make_call(ServerAlias, URL, ArgList, Timeout).
 				   
-call({Register, ServerAlias},{Path}) ->
-    call({Register, ServerAlias},{Path, []});
+call(Where,{Path}) ->
+    call(Where,{Path, []},?RECEIVE_TIMEOUT);
 
-call({_Register, ServerAlias},{Path, ArgList}) ->
-   call(Where, Args,?RECEIVE_TIMEOUT).
+call(Where, {Path, ArgList}) ->
+   call(Where, {Path, ArgList},?RECEIVE_TIMEOUT).
 
 make_call(ServerAlias, URL, ArgList) ->
 	make_call(ServerAlias, URL, ArgList, ?RECEIVE_TIMEOUT).
