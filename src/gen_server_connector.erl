@@ -40,7 +40,10 @@ handle_request(Req) ->
 	    of
 		{ok, Response} -> 
 		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
-		    Request
+		    Request;
+	    	Error -> 
+		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
+		    empty_answer(Request)
 			
 	    catch
 		Error -> 
