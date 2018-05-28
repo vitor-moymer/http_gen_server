@@ -2,7 +2,7 @@
 
 -export([start_connector/1, start_connector/2, init/2]).
 
--define(TIMEOUT,20000).
+-define(TIMEOUT,30000).
 
 start_connector(Port, Connections) -> 
     Dispatch = cowboy_router:compile([
