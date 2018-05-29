@@ -40,7 +40,7 @@ handle_request(Req) ->
 	    of
 		{ok, Response} -> 
 		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
-		    Request;	
+		    Request	
 	    catch
 	     _Error:Reason -> 
 		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason,erlang:get_stacktrace()]),
