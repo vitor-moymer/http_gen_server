@@ -40,14 +40,10 @@ handle_request(Req) ->
 	    of
 		{ok, Response} -> 
 		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
-		    Request;
-	    	Error -> 
-		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
-		    empty_answer(Request)
-			
+		    Request;	
 	    catch
-		Error -> 
-		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
+	     _Error:Reason -> 
+		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason,erlang:get_stacktrace()]),
 		    empty_answer(Request)
 			
 	    end;
@@ -61,8 +57,8 @@ handle_request(Req) ->
                 {ok, done} -> 
 		    empty_answer(Request)
 	    catch
-                Error -> 
-		    io:format("~p Error: ~p~n",[ModuleFunc,Error]),
+              _Error:Reason -> 
+		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason,erlang:get_stacktrace()]),
                     empty_answer(Request)
 	    end;
 	_ -> 
