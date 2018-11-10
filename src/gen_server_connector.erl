@@ -12,7 +12,7 @@ start_connector(Port, Connections) ->
                                             ]}
 				     ]),
     {ok, _} = cowboy:start_clear(http, [{port, Port}, {num_acceptors,Connections}], #{
-						      env => #{dispatch => Dispatch}, request_timeout => 120000, max_keepalive => 1000
+						      env => #{dispatch => Dispatch}, request_timeout => 300000, max_keepalive => 1000
 						     }).
 
 start_connector(Port) ->
