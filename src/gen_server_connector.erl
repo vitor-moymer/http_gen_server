@@ -29,13 +29,16 @@ handle_request(Req) ->
     Module = binary_to_atom(ModToken,utf8),
     ModuleFunc = binary_to_atom(ModFuncToken,utf8),
     {ok, Body, Request} = cowboy_req:read_body(Req, #{}),
-    ArgList = [ModuleFunc | decode_arglist(binary_to_term(Body), [])],
+    ArgsToProcess = decode_arglist(binary_to_term(Body), []),	
+    ArgList = [ModuleFunc | ArgsToProcess],
     Args = list_to_tuple(ArgList),
     %%io:format("PID ~p, ~p ~p for ~p ~n",[self(),GenFunc,Module, Args ]),
     case GenFunc of 
         <<"call">> ->
 	    try
-		R = gen_server:call({global,Module}, Args, ?TIMEOUT ),
+		 io:format("Pid acceptor cowboy: ~p~n",[self()]),     
+		R = Module:ModuleFunc(ArgsToProcess),     
+		%%R = gen_server:call({global,Module}, Args, ?TIMEOUT ),
 		{ok, R}    
 	    of
 		{ok, Response} -> 
