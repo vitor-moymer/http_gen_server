@@ -36,9 +36,8 @@ handle_request(Req) ->
     case GenFunc of 
         <<"call">> ->
 	    try
-		 io:format("Pid acceptor cowboy: ~p~n",[self()]),     
-		R = Module:ModuleFunc(ArgsToProcess),     
-		%%R = gen_server:call({global,Module}, Args, ?TIMEOUT ),
+		%%R = erlang:apply(Module,ModuleFunc,ArgsToProcess),     
+		R = gen_server:call({global,Module}, Args, ?TIMEOUT ),
 		{ok, R}    
 	    of
 		{ok, Response} -> 
