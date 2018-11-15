@@ -45,7 +45,7 @@ handle_request(Req) ->
 		    Request	
 	    catch
 	     _Error:Reason -> 
-		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason,erlang:get_stacktrace()]),
+		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason]),
 		    empty_answer(Request)
 			
 	    end;
@@ -60,7 +60,7 @@ handle_request(Req) ->
 		    empty_answer(Request)
 	    catch
               _Error:Reason -> 
-		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason,erlang:get_stacktrace()]),
+		    io:format("~p Error: ~p ~p~n",[ModuleFunc,Reason]),
                     empty_answer(Request)
 	    end;
 	_ -> 
