@@ -4,19 +4,19 @@
 
 -define(TIMEOUT,20000).
 
-start_connector(Port, Connections) -> 
+start_connector(Port, Acceptors) -> 
     Dispatch = cowboy_router:compile([
                                       {'_', [
                                              {"/", gen_server_connector, []},
 					     {"/[...]", gen_server_connector, []}
                                             ]}
 				     ]),
-    {ok, _} = cowboy:start_clear(http, [{port, Port}, {num_acceptors,Connections}], #{
-						      env => #{dispatch => Dispatch}, request_timeout => 20000, max_keepalive => 100
+    {ok, _} = cowboy:start_clear(http, [{port, Port}, {num_acceptors,Acceptors}], #{
+						      env => #{dispatch => Dispatch}, request_timeout => 20000, max_keepalive => 1000
 						     }).
 
 start_connector(Port) ->
-    start_connector(Port, 5000).
+    start_connector(Port, 100).
 
 
 init(Req, Opts) ->
