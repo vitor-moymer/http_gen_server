@@ -24,7 +24,7 @@ start_link(Services) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [Services], []).
 
 init([Services]) ->
-    ets:new(?MODULE, [set, named_table, protected]),  
+    ets:new(?MODULE, [set, named_table, protected,{write_concurrency,false}, {read_concurrency,true}]),  
     start_services(Services), 
     {ok, #state{}}.
 
