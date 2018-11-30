@@ -44,7 +44,7 @@ handle_request(Req) ->
 		    cowboy_req:reply(200, #{}, term_to_binary(Response), Request),
 		    Request	
 	    catch
-	     _Error:Reason -> 
+	     _Error:_Reason -> 
 		    %%io:format("~p Error: ~p~n",[ModuleFunc,Reason]),
 		    empty_answer(Request)
 			
@@ -59,7 +59,7 @@ handle_request(Req) ->
                 {ok, done} -> 
 		    empty_answer(Request)
 	    catch
-              _Error:Reason -> 
+              _Error:_Reason -> 
 		    %%io:format("~p Error: ~p~n",[ModuleFunc,Reason]),
                     empty_answer(Request)
 	    end;
