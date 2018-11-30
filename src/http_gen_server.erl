@@ -111,11 +111,11 @@ post(call, URL, Headers,Payload, Options) ->
 	    case hackney:body(ClientRef) of
 		{ok, Body} ->
 		    binary_to_term(Body);
-		ErrorBody ->
+		_ErrorBody ->
 		    %%io:format("~p ~p~n",[URL,ErrorBody]),
 		    <<>>
 	    end;
-	ErrorPost ->
+	_ErrorPost ->
 	    %%io:format("~p ~p~n",[URL,ErrorPost]),
 	    <<>>
     end;
@@ -126,11 +126,11 @@ post(cast,URL, Headers,Payload, Options) ->
 	    case hackney:body(ClientRef) of
                 {ok, _} ->
                     <<>>;
-                ErrorBody ->
+                _ErrorBody ->
                     %%io:format("~p ~p~n",[URL,ErrorBody]),
                     <<>>
 	     end;
-	ErrorPost ->
+	_ErrorPost ->
 	    %%io:format("~p ~p~n",[URL,ErrorPost]),
             <<>>
     end.
